@@ -6,6 +6,7 @@ import prisma from "./prisma";
 import jwt from "jsonwebtoken";
 import { issueQueue } from "./queue";
 import { categorizeIssue } from "./ai";
+import { generateEmbedding } from "./embeddings";
 
 const app = express();
 const PORT = 4000;
@@ -175,6 +176,26 @@ app.post("/issues/:id/categorize", async (req, res) => {
     const suggestedCategory = await categorizeIssue(issue.title, issue.body || "");
 
     res.json({ suggestedCategory });
+});
+
+app.post("/issues/:id/embed", async (req, res) => {
+    const id = Number(req.params.id);
+    const issue = await prisma.issue.findUnique({ where: { id } });
+
+    if (!issue) {
+        return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const text = `${issue.title}\n\n${issue.body || ""}`;
+    const embedding = await generateEmbedding(text);
+
+    await prisma.$executeRawUnsafe(
+        `UPDATE "Issue" SET embedding = $1::vector WHERE id = $2`,
+        `[${embedding.join(",")}]`,
+        id
+    );
+
+    res.json({ message: "Embedding saved", length: embedding.length });
 });
 
 app.listen(PORT, () => {
