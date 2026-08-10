@@ -4,6 +4,7 @@ import "dotenv/config";
 import axios from "axios";
 import prisma from "./prisma";
 import jwt from "jsonwebtoken";
+import { issueQueue } from "./queue";
 
 const app = express();
 const PORT = 4000;
@@ -126,6 +127,17 @@ app.get("/issues", async (req, res) => {
         orderBy: { createdAt: "desc" },
     });
     res.json(issues);
+});
+
+app.post("/webhooks/github", async (req, res) => {
+    const { action, issue, repository } = req.body;
+
+    if (issue) {
+        await issueQueue.add("process-issue", { action, issue, repository });
+        console.log(`Queued job for issue #${issue.number}`);
+    }
+
+    res.status(200).send("OK");
 });
 
 app.get("/issues/:id", async (req, res) => {
