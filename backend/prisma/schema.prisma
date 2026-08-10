@@ -33,4 +33,5 @@ model Issue {
   createdAt   DateTime
   updatedAt   DateTime
   importedAt  DateTime @default(now())
+  embedding   Unsupported("vector(384)")?
 }
