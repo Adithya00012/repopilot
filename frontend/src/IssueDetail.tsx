@@ -27,6 +27,14 @@ function IssueDetail() {
       });
   }, [id]);
 
+  const handleSuggest = async () => {
+    const res = await fetch(`http://localhost:4000/issues/${id}/categorize`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setLabel(data.suggestedCategory);
+  };
+
   const handleApprove = async () => {
     const res = await fetch(`http://localhost:4000/issues/${id}`, {
       method: "PATCH",
@@ -55,13 +63,16 @@ function IssueDetail() {
           Label:{" "}
           <select value={label} onChange={(e) => setLabel(e.target.value)}>
             <option value="">-- select --</option>
-            <option value="bug">Bug</option>
-            <option value="feature">Feature Request</option>
-            <option value="documentation">Documentation</option>
-            <option value="security">Security</option>
-            <option value="question">Question</option>
+            <option value="Bug">Bug</option>
+            <option value="Feature Request">Feature Request</option>
+            <option value="Documentation">Documentation</option>
+            <option value="Security">Security</option>
+            <option value="Question">Question</option>
           </select>
         </label>
+        <button onClick={handleSuggest} style={{ marginLeft: "1rem" }}>
+          Suggest with AI
+        </button>
         <button onClick={handleApprove} style={{ marginLeft: "1rem" }}>
           Approve
         </button>
