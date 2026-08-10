@@ -120,6 +120,13 @@ app.get("/repos/:owner/:repo/import", async (req, res) => {
     res.json({ imported: saved.length, issues: saved });
 });
 
+app.get("/issues", async (req, res) => {
+    const issues = await prisma.issue.findMany({
+        orderBy: { createdAt: "desc" },
+    });
+    res.json(issues);
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
