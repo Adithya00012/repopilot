@@ -26,6 +26,8 @@ model Issue {
   title       String
   body        String?
   state       String
+  label       String?
+  approved    Boolean  @default(false)
   repo        String
   author      String
   createdAt   DateTime

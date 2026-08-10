@@ -9,6 +9,7 @@ const app = express();
 const PORT = 4000;
 
 app.use(cors());
+app.use(express.json());
 
 (BigInt.prototype as any).toJSON = function () {
     return this.toString();
@@ -125,6 +126,29 @@ app.get("/issues", async (req, res) => {
         orderBy: { createdAt: "desc" },
     });
     res.json(issues);
+});
+
+app.get("/issues/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const issue = await prisma.issue.findUnique({ where: { id } });
+
+    if (!issue) {
+        return res.status(404).json({ error: "Issue not found" });
+    }
+
+    res.json(issue);
+});
+
+app.patch("/issues/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const { label, approved } = req.body;
+
+    const issue = await prisma.issue.update({
+        where: { id },
+        data: { label, approved },
+    });
+
+    res.json(issue);
 });
 
 app.listen(PORT, () => {
