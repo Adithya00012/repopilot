@@ -19,6 +19,7 @@
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
+    "openai": "^6.49.0",
     "pg": "^8.23.0"
   },
   "devDependencies": {

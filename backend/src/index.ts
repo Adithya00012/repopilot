@@ -5,6 +5,7 @@ import axios from "axios";
 import prisma from "./prisma";
 import jwt from "jsonwebtoken";
 import { issueQueue } from "./queue";
+import { categorizeIssue } from "./ai";
 
 const app = express();
 const PORT = 4000;
@@ -161,6 +162,19 @@ app.patch("/issues/:id", async (req, res) => {
     });
 
     res.json(issue);
+});
+
+app.post("/issues/:id/categorize", async (req, res) => {
+    const id = Number(req.params.id);
+    const issue = await prisma.issue.findUnique({ where: { id } });
+
+    if (!issue) {
+        return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const suggestedCategory = await categorizeIssue(issue.title, issue.body || "");
+
+    res.json({ suggestedCategory });
 });
 
 app.listen(PORT, () => {
