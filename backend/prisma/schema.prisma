@@ -18,3 +18,17 @@ model User {
   username  String
   createdAt DateTime @default(now())
 }
+
+model Issue {
+  id          Int      @id @default(autoincrement())
+  githubId    BigInt      @unique
+  number      Int
+  title       String
+  body        String?
+  state       String
+  repo        String
+  author      String
+  createdAt   DateTime
+  updatedAt   DateTime
+  importedAt  DateTime @default(now())
+}

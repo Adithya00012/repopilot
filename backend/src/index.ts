@@ -10,6 +10,10 @@ const PORT = 4000;
 
 app.use(cors());
 
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 app.get("/", (req, res) => {
     res.send("Hello API");
 });
@@ -73,6 +77,47 @@ app.get("/me", (req, res) => {
     } catch (err) {
         res.status(401).json({ error: "Invalid token" });
     }
+});
+
+app.get("/repos/:owner/:repo/import", async (req, res) => {
+    const { owner, repo } = req.params;
+
+    const response = await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/issues`,
+        {
+            headers: { Accept: "application/vnd.github+json" },
+            params: { state: "all", per_page: 20 },
+        }
+    );
+
+    const issues = response.data.filter((item: any) => !item.pull_request);
+
+    const saved = [];
+    for (const issue of issues) {
+        const saved_issue = await prisma.issue.upsert({
+            where: { githubId: BigInt(issue.id) },
+            update: {
+                title: issue.title,
+                body: issue.body,
+                state: issue.state,
+                updatedAt: new Date(issue.updated_at),
+            },
+            create: {
+                githubId: BigInt(issue.id),
+                number: issue.number,
+                title: issue.title,
+                body: issue.body,
+                state: issue.state,
+                repo: `${owner}/${repo}`,
+                author: issue.user.login,
+                createdAt: new Date(issue.created_at),
+                updatedAt: new Date(issue.updated_at),
+            },
+        });
+        saved.push(saved_issue);
+    }
+
+    res.json({ imported: saved.length, issues: saved });
 });
 
 app.listen(PORT, () => {
