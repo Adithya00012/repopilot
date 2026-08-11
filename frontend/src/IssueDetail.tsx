@@ -27,6 +27,7 @@ function IssueDetail() {
   const [label, setLabel] = useState("");
   const [similar, setSimilar] = useState<SimilarIssue[]>([]);
   const [completeness, setCompleteness] = useState<{ complete: boolean; reason: string } | null>(null);
+  const [draft, setDraft] = useState("");
 
   useEffect(() => {
     fetch(`http://localhost:4000/issues/${id}`)
@@ -55,6 +56,14 @@ function IssueDetail() {
     });
     const data = await res.json();
     setCompleteness(data);
+  };
+
+  const handleDraftResponse = async () => {
+    const res = await fetch(`http://localhost:4000/issues/${id}/draft-response`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setDraft(data.draft);
   };
 
   const handleApprove = async () => {
@@ -119,6 +128,20 @@ function IssueDetail() {
             {completeness.complete ? "✅ Complete" : "⚠️ Incomplete"} — {completeness.reason}
           </p>
         )}
+        <div style={{ marginTop: "1rem" }}>
+          <button onClick={handleDraftResponse}>Draft Response</button>
+          {draft && (
+            <div style={{ marginTop: "0.5rem" }}>
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                rows={5}
+                style={{ width: "100%", padding: "0.5rem" }}
+              />
+              <button style={{ marginTop: "0.5rem" }}>Send Response</button>
+            </div>
+          )}
+        </div>
         <button onClick={handleApprove} style={{ marginLeft: "1rem" }}>
           Approve
         </button>
