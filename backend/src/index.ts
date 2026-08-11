@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { issueQueue } from "./queue";
 import { categorizeIssue } from "./ai";
 import { generateEmbedding } from "./embeddings";
+import { checkCompleteness } from "./ai";
 
 const app = express();
 const PORT = 4000;
@@ -196,6 +197,18 @@ app.post("/issues/:id/embed", async (req, res) => {
     );
 
     res.json({ message: "Embedding saved", length: embedding.length });
+});
+
+app.post("/issues/:id/check-completeness", async (req, res) => {
+    const id = Number(req.params.id);
+    const issue = await prisma.issue.findUnique({ where: { id } });
+
+    if (!issue) {
+        return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const result = await checkCompleteness(issue.title, issue.body || "");
+    res.json(result);
 });
 
 app.get("/issues/:id/similar", async (req, res) => {
