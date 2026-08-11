@@ -44,4 +44,23 @@ export async function checkCompleteness(title: string, body: string) {
     return JSON.parse(content);
 }
 
+export async function draftResponse(title: string, body: string, isComplete: boolean, reason: string) {
+    const response = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are a helpful open-source maintainer assistant. Write a short, polite draft reply to this GitHub issue author. If the issue is incomplete, politely ask for the missing information. If it's complete, thank them and acknowledge the issue. Keep it under 80 words. Reply with only the message text, no greeting like 'Dear' or signature.",
+            },
+            {
+                role: "user",
+                content: `Title: ${title}\n\nBody: ${body || "(no description)"}\n\nCompleteness: ${isComplete ? "complete" : "incomplete"} (${reason})`,
+            },
+        ],
+    });
+
+    return response.choices[0].message.content?.trim();
+}
+
 export default groq;

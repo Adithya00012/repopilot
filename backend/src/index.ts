@@ -8,6 +8,7 @@ import { issueQueue } from "./queue";
 import { categorizeIssue } from "./ai";
 import { generateEmbedding } from "./embeddings";
 import { checkCompleteness } from "./ai";
+import { draftResponse } from "./ai";
 
 const app = express();
 const PORT = 4000;
@@ -209,6 +210,20 @@ app.post("/issues/:id/check-completeness", async (req, res) => {
 
     const result = await checkCompleteness(issue.title, issue.body || "");
     res.json(result);
+});
+
+app.post("/issues/:id/draft-response", async (req, res) => {
+    const id = Number(req.params.id);
+    const issue = await prisma.issue.findUnique({ where: { id } });
+
+    if (!issue) {
+        return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const completeness = await checkCompleteness(issue.title, issue.body || "");
+    const draft = await draftResponse(issue.title, issue.body || "", completeness.complete, completeness.reason);
+
+    res.json({ draft });
 });
 
 app.get("/issues/:id/similar", async (req, res) => {
