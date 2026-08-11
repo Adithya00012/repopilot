@@ -198,6 +198,21 @@ app.post("/issues/:id/embed", async (req, res) => {
     res.json({ message: "Embedding saved", length: embedding.length });
 });
 
+app.get("/issues/:id/similar", async (req, res) => {
+    const id = Number(req.params.id);
+
+    const results: any = await prisma.$queryRawUnsafe(
+        `SELECT id, number, title, state, 1 - (embedding <=> (SELECT embedding FROM "Issue" WHERE id = $1)) AS similarity
+     FROM "Issue"
+     WHERE id != $1 AND embedding IS NOT NULL
+     ORDER BY embedding <=> (SELECT embedding FROM "Issue" WHERE id = $1)
+     LIMIT 5`,
+        id
+    );
+
+    res.json(results);
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
