@@ -26,6 +26,7 @@ function IssueDetail() {
   const [issue, setIssue] = useState<Issue | null>(null);
   const [label, setLabel] = useState("");
   const [similar, setSimilar] = useState<SimilarIssue[]>([]);
+  const [completeness, setCompleteness] = useState<{ complete: boolean; reason: string } | null>(null);
 
   useEffect(() => {
     fetch(`http://localhost:4000/issues/${id}`)
@@ -46,6 +47,14 @@ function IssueDetail() {
     });
     const data = await res.json();
     setLabel(data.suggestedCategory);
+  };
+
+  const handleCheckCompleteness = async () => {
+    const res = await fetch(`http://localhost:4000/issues/${id}/check-completeness`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setCompleteness(data);
   };
 
   const handleApprove = async () => {
@@ -101,6 +110,15 @@ function IssueDetail() {
         <button onClick={handleSuggest} style={{ marginLeft: "1rem" }}>
           Suggest with AI
         </button>
+        <button onClick={handleCheckCompleteness} style={{ marginLeft: "1rem" }}>
+          Check Completeness
+        </button>
+
+        {completeness && (
+          <p style={{ marginTop: "0.5rem", color: completeness.complete ? "green" : "red" }}>
+            {completeness.complete ? "✅ Complete" : "⚠️ Incomplete"} — {completeness.reason}
+          </p>
+        )}
         <button onClick={handleApprove} style={{ marginLeft: "1rem" }}>
           Approve
         </button>
