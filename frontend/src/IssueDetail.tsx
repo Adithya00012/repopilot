@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
+interface SimilarIssue {
+  id: number;
+  number: number;
+  title: string;
+  state: string;
+  similarity: number;
+}
+
 interface Issue {
   id: number;
   number: number;
@@ -17,6 +25,7 @@ function IssueDetail() {
   const { id } = useParams();
   const [issue, setIssue] = useState<Issue | null>(null);
   const [label, setLabel] = useState("");
+  const [similar, setSimilar] = useState<SimilarIssue[]>([]);
 
   useEffect(() => {
     fetch(`http://localhost:4000/issues/${id}`)
@@ -25,6 +34,10 @@ function IssueDetail() {
         setIssue(data);
         setLabel(data.label || "");
       });
+
+    fetch(`http://localhost:4000/issues/${id}/similar`)
+      .then((res) => res.json())
+      .then((data) => setSimilar(data));
   }, [id]);
 
   const handleSuggest = async () => {
@@ -58,6 +71,21 @@ function IssueDetail() {
         {issue.body}
       </pre>
 
+      {similar.length > 0 && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <h3>Possible Duplicates</h3>
+          <ul>
+            {similar.map((s) => (
+              <li key={s.id}>
+                <Link to={`/issues/${s.id}`}>
+                  #{s.number} — {s.title} ({s.state})
+                </Link>{" "}
+                — similarity: {(s.similarity * 100).toFixed(1)}%
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div style={{ marginTop: "1rem" }}>
         <label>
           Label:{" "}
