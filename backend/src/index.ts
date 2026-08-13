@@ -330,10 +330,21 @@ app.post("/ask", aiLimiter, async (req, res) => {
 });
 
 app.get("/issues", async (req, res) => {
+    const { repo } = req.query;
+
     const issues = await prisma.issue.findMany({
+        where: repo ? { repo: repo as string } : {},
         orderBy: { createdAt: "desc" },
     });
     res.json(issues);
+});
+
+app.get("/repos", async (req, res) => {
+    const repos = await prisma.issue.findMany({
+        select: { repo: true },
+        distinct: ["repo"],
+    });
+    res.json(repos.map((r) => r.repo));
 });
 
 app.post("/internal/notify-new-issue", async (req, res) => {
