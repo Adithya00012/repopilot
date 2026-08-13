@@ -297,14 +297,26 @@ app.post("/ask", aiLimiter, async (req, res) => {
 
     const questionEmbedding = await generateEmbedding(question);
 
-    const relevantDocs: any = await prisma.$queryRawUnsafe(
-        `SELECT id, source, content, 1 - (embedding <=> $1::vector) AS similarity
-     FROM "Document"
-     WHERE embedding IS NOT NULL
-     ORDER BY embedding <=> $1::vector
-     LIMIT 3`,
-        `[${questionEmbedding.join(",")}]`
-    );
+    const { repo } = req.body;
+
+    const relevantDocs: any = repo
+        ? await prisma.$queryRawUnsafe(
+            `SELECT id, source, content, 1 - (embedding <=> $1::vector) AS similarity
+       FROM "Document"
+       WHERE embedding IS NOT NULL AND source LIKE $2
+       ORDER BY embedding <=> $1::vector
+       LIMIT 3`,
+            `[${questionEmbedding.join(",")}]`,
+            `${repo}%`
+        )
+        : await prisma.$queryRawUnsafe(
+            `SELECT id, source, content, 1 - (embedding <=> $1::vector) AS similarity
+       FROM "Document"
+       WHERE embedding IS NOT NULL
+       ORDER BY embedding <=> $1::vector
+       LIMIT 3`,
+            `[${questionEmbedding.join(",")}]`
+        );
 
     const context = relevantDocs.map((d: any) => d.content).join("\n\n---\n\n");
 
