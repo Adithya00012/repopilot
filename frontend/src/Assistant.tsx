@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";    
 import { Link } from "react-router-dom";
 
 interface Message {
@@ -11,6 +11,14 @@ function Assistant() {
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
+    const [repos, setRepos] = useState<string[]>([]);
+    const [selectedRepo, setSelectedRepo] = useState("");
+
+    useEffect(() => {
+        fetch("http://localhost:4000/repos")
+            .then((res) => res.json())
+            .then((data) => setRepos(data));
+    }, []);
 
     const handleAsk = async () => {
         if (!question.trim()) return;
@@ -23,7 +31,7 @@ function Assistant() {
         const res = await fetch("http://localhost:4000/ask", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ question: userMsg.text }),
+            body: JSON.stringify({ question: userMsg.text, repo: selectedRepo || undefined }),
         });
         const data = await res.json();
 
@@ -38,6 +46,21 @@ function Assistant() {
         <div className="max-w-2xl mx-auto p-6">
             <Link to="/" className="text-blue-600 hover:underline text-sm">← Back to issues</Link>
             <h1 className="text-2xl font-bold text-gray-900 mt-3 mb-4">Repo Assistant</h1>
+            <div className="mb-4">
+                <label className="text-sm text-gray-700">
+                    Repo:{" "}
+                    <select
+                        value={selectedRepo}
+                        onChange={(e) => setSelectedRepo(e.target.value)}
+                        className="ml-1 border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                        <option value="">All repos</option>
+                        {repos.map((r) => (
+                            <option key={r} value={r}>{r}</option>
+                        ))}
+                    </select>
+                </label>
+            </div>
 
             <div className="space-y-4 mb-4">
                 {messages.map((m, i) => (
