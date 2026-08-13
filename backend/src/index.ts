@@ -325,8 +325,9 @@ app.post("/ask", aiLimiter, async (req, res) => {
         messages: [
             {
                 role: "system",
-                content:
-                    "You are a helpful assistant answering questions about a GitHub repository. Use only the provided context to answer. If the context doesn't contain the answer, say you don't know.",
+                content: repo
+                    ? "You are a helpful assistant answering questions about a specific GitHub repository. Use only the provided context to answer. If the context doesn't contain the answer, say you don't know."
+                    : "You are a helpful assistant answering questions that may span multiple GitHub repositories. The context may come from different repos — check the source of each snippet and be clear about which repo you're referring to. If the context doesn't contain the answer, say you don't know.",
             },
             {
                 role: "user",

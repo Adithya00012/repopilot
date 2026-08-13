@@ -67,6 +67,7 @@ function IssueList() {
     setImporting(true);
     const [owner, repo] = newRepo.split("/");
     await fetch(`http://localhost:4000/repos/${owner}/${repo}/import`);
+    await fetch(`http://localhost:4000/repos/${owner}/${repo}/ingest-docs`, { method: "POST" });
     setNewRepo("");
     fetchRepos();
     fetchIssues(selectedRepo);
