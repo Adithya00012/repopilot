@@ -9,6 +9,7 @@ import { categorizeIssue } from "./ai";
 import { generateEmbedding } from "./embeddings";
 import { checkCompleteness } from "./ai";
 import { draftResponse } from "./ai";
+import groq from "./ai";
 
 const app = express();
 const PORT = 4000;
@@ -162,6 +163,47 @@ app.post("/repos/:owner/:repo/ingest-docs", async (req, res) => {
     }
 
     res.json({ message: "Docs ingested", chunksSaved: saved });
+});
+
+app.post("/ask", async (req, res) => {
+    const { question } = req.body;
+
+    if (!question) {
+        return res.status(400).json({ error: "Question is required" });
+    }
+
+    const questionEmbedding = await generateEmbedding(question);
+
+    const relevantDocs: any = await prisma.$queryRawUnsafe(
+        `SELECT id, source, content, 1 - (embedding <=> $1::vector) AS similarity
+     FROM "Document"
+     WHERE embedding IS NOT NULL
+     ORDER BY embedding <=> $1::vector
+     LIMIT 3`,
+        `[${questionEmbedding.join(",")}]`
+    );
+
+    const context = relevantDocs.map((d: any) => d.content).join("\n\n---\n\n");
+
+    const response = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are a helpful assistant answering questions about a GitHub repository. Use only the provided context to answer. If the context doesn't contain the answer, say you don't know.",
+            },
+            {
+                role: "user",
+                content: `Context:\n${context}\n\nQuestion: ${question}`,
+            },
+        ],
+    });
+
+    res.json({
+        answer: response.choices[0].message.content,
+        sources: relevantDocs.map((d: any) => d.source),
+    });
 });
 
 app.get("/issues", async (req, res) => {
