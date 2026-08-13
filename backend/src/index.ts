@@ -236,6 +236,28 @@ app.get("/reports/frequent-problems", async (req, res) => {
     res.json({ count: bugs.length, summary: response.choices[0].message.content });
 });
 
+app.get("/reports/high-priority", async (req, res) => {
+    const openIssues = await prisma.issue.findMany({
+        where: { state: "open" },
+        orderBy: { createdAt: "asc" },
+    });
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const stale = openIssues.filter((i) => i.createdAt < thirtyDaysAgo);
+    const securityLabeled = openIssues.filter((i) => i.label === "Security");
+    const unapproved = openIssues.filter((i) => !i.approved);
+
+    res.json({
+        staleCount: stale.length,
+        stale: stale.map((i) => ({ id: i.id, number: i.number, title: i.title, createdAt: i.createdAt })),
+        securityCount: securityLabeled.length,
+        security: securityLabeled.map((i) => ({ id: i.id, number: i.number, title: i.title })),
+        unapprovedCount: unapproved.length,
+    });
+});
+
 app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
