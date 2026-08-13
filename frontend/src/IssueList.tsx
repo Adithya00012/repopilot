@@ -22,6 +22,7 @@ function IssueList() {
   return (
     <div style={{ padding: "2rem" }}>
       <h1>RepoPilot</h1>
+      <Link to="/assistant">Ask the Repo Assistant →</Link>
       <h2>Issues</h2>
       <ul>
         {issues.map((issue) => (
