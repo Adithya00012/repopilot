@@ -258,6 +258,21 @@ app.get("/reports/high-priority", async (req, res) => {
     });
 });
 
+app.get("/reports/contributors", async (req, res) => {
+    const issues = await prisma.issue.findMany();
+
+    const counts: Record<string, number> = {};
+    for (const issue of issues) {
+        counts[issue.author] = (counts[issue.author] || 0) + 1;
+    }
+
+    const contributors = Object.entries(counts)
+        .map(([author, count]) => ({ author, issueCount: count }))
+        .sort((a, b) => b.issueCount - a.issueCount);
+
+    res.json({ contributors });
+});
+
 app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
