@@ -63,4 +63,23 @@ export async function draftResponse(title: string, body: string, isComplete: boo
     return response.choices[0].message.content?.trim();
 }
 
+export async function generateReleaseSummary(issuesList: string) {
+    const response = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are a release notes writer. Given a list of closed GitHub issues, write a concise, well-organized release notes summary grouped by category (Bug Fixes, Features, Documentation, etc). Use markdown formatting.",
+            },
+            {
+                role: "user",
+                content: issuesList,
+            },
+        ],
+    });
+
+    return response.choices[0].message.content?.trim();
+}
+
 export default groq;

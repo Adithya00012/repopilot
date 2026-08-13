@@ -10,6 +10,7 @@ import { generateEmbedding } from "./embeddings";
 import { checkCompleteness } from "./ai";
 import { draftResponse } from "./ai";
 import groq from "./ai";
+import { generateReleaseSummary } from "./ai";
 
 const app = express();
 const PORT = 4000;
@@ -192,6 +193,21 @@ app.post("/ingest-resolved-issues", async (req, res) => {
     }
 
     res.json({ message: "Resolved issues ingested", count: saved });
+});
+
+app.get("/reports/release-notes", async (req, res) => {
+    const closedIssues = await prisma.issue.findMany({
+        where: { state: "closed" },
+        orderBy: { updatedAt: "desc" },
+    });
+
+    const issuesList = closedIssues
+        .map((i) => `#${i.number}: ${i.title} (${i.label || "uncategorized"})`)
+        .join("\n");
+
+    const summary = await generateReleaseSummary(issuesList || "No closed issues this period.");
+
+    res.json({ count: closedIssues.length, notes: summary });
 });
 
 app.post("/ask", async (req, res) => {
