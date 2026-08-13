@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 
 interface SimilarIssue {
   id: number;
@@ -110,9 +111,9 @@ function IssueDetail() {
         </span>
       </div>
 
-      <pre className="whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800 mb-6">
-        {issue.body}
-      </pre>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-800 mb-6 prose prose-sm max-w-none">
+        <ReactMarkdown>{issue.body}</ReactMarkdown>
+      </div>
 
       {similar.length > 0 && (
         <div className="mb-6">

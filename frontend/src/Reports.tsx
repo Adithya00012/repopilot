@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown"; 
 
 function Reports() {
     const [releaseNotes, setReleaseNotes] = useState("");
@@ -57,10 +58,10 @@ function Reports() {
                     </button>
                 </div>
                 {releaseNotes && (
-                    <pre className="whitespace-pre-wrap bg-gray-50 rounded-lg p-3 text-sm text-gray-800">
-                        {releaseNotes}
-                    </pre>
-                )}
+                    <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-800 prose prose-sm max-w-none">
+                        <ReactMarkdown>{releaseNotes}</ReactMarkdown>
+                    </div>
+                )}  
             </section>
 
             <section className="mb-6 border border-gray-200 rounded-lg p-4">
@@ -75,9 +76,9 @@ function Reports() {
                     </button>
                 </div>
                 {frequentProblems && (
-                    <pre className="whitespace-pre-wrap bg-gray-50 rounded-lg p-3 text-sm text-gray-800">
-                        {frequentProblems}
-                    </pre>
+                    <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-800 prose prose-sm max-w-none">
+                        <ReactMarkdown>{frequentProblems}</ReactMarkdown>
+                    </div>
                 )}
             </section>
 
