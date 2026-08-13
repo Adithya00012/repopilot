@@ -41,7 +41,13 @@ function IssueList() {
       <br />
       <Link to="/reports">View Weekly Reports →</Link>
       <br />
-      <a href="http://localhost:4000/auth/github">Login with GitHub →</a>
+      {localStorage.getItem("token") ? (
+        <button onClick={() => { localStorage.removeItem("token"); window.location.reload(); }}>
+          Logout
+        </button>
+      ) : (
+        <a href="http://localhost:4000/auth/github">Login with GitHub →</a>
+      )}
       <h2>Issues</h2>
       {notification && (
         <p style={{ background: "#d4f7d4", padding: "0.5rem" }}>{notification}</p>
