@@ -35,3 +35,11 @@ model Issue {
   importedAt  DateTime @default(now())
   embedding   Unsupported("vector(384)")?
 }
+
+model Document {
+  id         Int      @id @default(autoincrement())
+  source     String
+  content    String
+  embedding  Unsupported("vector(384)")?
+  createdAt  DateTime @default(now())
+}

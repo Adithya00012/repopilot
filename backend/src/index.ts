@@ -126,6 +126,44 @@ app.get("/repos/:owner/:repo/import", async (req, res) => {
     res.json({ imported: saved.length, issues: saved });
 });
 
+app.post("/repos/:owner/:repo/ingest-docs", async (req, res) => {
+    const { owner, repo } = req.params;
+
+    const readmeResponse = await axios.get(
+        `https://api.github.com/repos/${owner}/${repo}/readme`,
+        { headers: { Accept: "application/vnd.github.raw+json" } }
+    );
+
+    const readmeText: string = readmeResponse.data;
+
+    const chunkSize = 500;
+    const chunks: string[] = [];
+    for (let i = 0; i < readmeText.length; i += chunkSize) {
+        chunks.push(readmeText.slice(i, i + chunkSize));
+    }
+
+    let saved = 0;
+    for (const chunk of chunks) {
+        const embedding = await generateEmbedding(chunk);
+        const doc = await prisma.document.create({
+            data: {
+                source: `${owner}/${repo}/README.md`,
+                content: chunk,
+            },
+        });
+
+        await prisma.$executeRawUnsafe(
+            `UPDATE "Document" SET embedding = $1::vector WHERE id = $2`,
+            `[${embedding.join(",")}]`,
+            doc.id
+        );
+
+        saved++;
+    }
+
+    res.json({ message: "Docs ingested", chunksSaved: saved });
+});
+
 app.get("/issues", async (req, res) => {
     const issues = await prisma.issue.findMany({
         orderBy: { createdAt: "desc" },
