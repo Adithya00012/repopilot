@@ -41,41 +41,59 @@ function Reports() {
     };
 
     return (
-        <div style={{ padding: "2rem", maxWidth: "800px" }}>
-            <Link to="/">← Back to issues</Link>
-            <h1>Weekly Reports</h1>
+        <div className="max-w-3xl mx-auto p-6">
+            <Link to="/" className="text-blue-600 hover:underline text-sm">← Back to issues</Link>
+            <h1 className="text-2xl font-bold text-gray-900 mt-3 mb-6">Weekly Reports</h1>
 
-            <section style={{ marginBottom: "2rem" }}>
-                <h2>Release Notes</h2>
-                <button onClick={fetchReleaseNotes} disabled={loading === "release"}>
-                    {loading === "release" ? "Generating..." : "Generate"}
-                </button>
+            <section className="mb-6 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900">Release Notes</h2>
+                    <button
+                        onClick={fetchReleaseNotes}
+                        disabled={loading === "release"}
+                        className="text-sm px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                    >
+                        {loading === "release" ? "Generating..." : "Generate"}
+                    </button>
+                </div>
                 {releaseNotes && (
-                    <pre style={{ whiteSpace: "pre-wrap", background: "#f5f5f5", padding: "1rem" }}>
+                    <pre className="whitespace-pre-wrap bg-gray-50 rounded-lg p-3 text-sm text-gray-800">
                         {releaseNotes}
                     </pre>
                 )}
             </section>
 
-            <section style={{ marginBottom: "2rem" }}>
-                <h2>Frequently Reported Problems</h2>
-                <button onClick={fetchFrequentProblems} disabled={loading === "frequent"}>
-                    {loading === "frequent" ? "Analyzing..." : "Generate"}
-                </button>
+            <section className="mb-6 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900">Frequently Reported Problems</h2>
+                    <button
+                        onClick={fetchFrequentProblems}
+                        disabled={loading === "frequent"}
+                        className="text-sm px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                    >
+                        {loading === "frequent" ? "Analyzing..." : "Generate"}
+                    </button>
+                </div>
                 {frequentProblems && (
-                    <pre style={{ whiteSpace: "pre-wrap", background: "#f5f5f5", padding: "1rem" }}>
+                    <pre className="whitespace-pre-wrap bg-gray-50 rounded-lg p-3 text-sm text-gray-800">
                         {frequentProblems}
                     </pre>
                 )}
             </section>
 
-            <section style={{ marginBottom: "2rem" }}>
-                <h2>High-Priority Unresolved Issues</h2>
-                <button onClick={fetchHighPriority} disabled={loading === "priority"}>
-                    {loading === "priority" ? "Checking..." : "Generate"}
-                </button>
+            <section className="mb-6 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900">High-Priority Unresolved Issues</h2>
+                    <button
+                        onClick={fetchHighPriority}
+                        disabled={loading === "priority"}
+                        className="text-sm px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                    >
+                        {loading === "priority" ? "Checking..." : "Generate"}
+                    </button>
+                </div>
                 {highPriority && (
-                    <div style={{ background: "#f5f5f5", padding: "1rem" }}>
+                    <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-800 space-y-1">
                         <p>Stale issues (30+ days): {highPriority.staleCount}</p>
                         <p>Security-labeled: {highPriority.securityCount}</p>
                         <p>Unapproved: {highPriority.unapprovedCount}</p>
@@ -83,15 +101,21 @@ function Reports() {
                 )}
             </section>
 
-            <section style={{ marginBottom: "2rem" }}>
-                <h2>Contributor Summary</h2>
-                <button onClick={fetchContributors} disabled={loading === "contributors"}>
-                    {loading === "contributors" ? "Loading..." : "Generate"}
-                </button>
+            <section className="mb-6 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold text-gray-900">Contributor Summary</h2>
+                    <button
+                        onClick={fetchContributors}
+                        disabled={loading === "contributors"}
+                        className="text-sm px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                    >
+                        {loading === "contributors" ? "Loading..." : "Generate"}
+                    </button>
+                </div>
                 {contributors.length > 0 && (
-                    <ul>
+                    <ul className="space-y-1 text-sm text-gray-800">
                         {contributors.map((c) => (
-                            <li key={c.author}>
+                            <li key={c.author} className="bg-gray-50 rounded px-3 py-1.5">
                                 {c.author} — {c.issueCount} issue(s)
                             </li>
                         ))}

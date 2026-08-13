@@ -35,35 +35,42 @@ function Assistant() {
     };
 
     return (
-        <div style={{ padding: "2rem", maxWidth: "700px" }}>
-            <Link to="/">← Back to issues</Link>
-            <h1>Repo Assistant</h1>
+        <div className="max-w-2xl mx-auto p-6">
+            <Link to="/" className="text-blue-600 hover:underline text-sm">← Back to issues</Link>
+            <h1 className="text-2xl font-bold text-gray-900 mt-3 mb-4">Repo Assistant</h1>
 
-            <div style={{ marginBottom: "1rem" }}>
+            <div className="space-y-4 mb-4">
                 {messages.map((m, i) => (
-                    <div key={i} style={{ marginBottom: "1rem" }}>
-                        <strong>{m.role === "user" ? "You" : "Assistant"}:</strong>
-                        <p>{m.text}</p>
+                    <div
+                        key={i}
+                        className={`p-3 rounded-lg text-sm ${m.role === "user" ? "bg-blue-50 text-blue-900" : "bg-gray-50 text-gray-800"
+                            }`}
+                    >
+                        <p className="font-semibold mb-1">{m.role === "user" ? "You" : "Assistant"}</p>
+                        <p className="whitespace-pre-wrap">{m.text}</p>
                         {m.sources && (
-                            <p style={{ fontSize: "0.8rem", color: "#666" }}>
-                                Sources: {m.sources.join(", ")}
-                            </p>
+                            <p className="text-xs text-gray-500 mt-2">Sources: {m.sources.join(", ")}</p>
                         )}
                     </div>
                 ))}
-                {loading && <p>Thinking...</p>}
+                {loading && <p className="text-sm text-gray-500">Thinking...</p>}
             </div>
 
-            <input
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAsk()}
-                placeholder="Ask about this repo..."
-                style={{ width: "80%", padding: "0.5rem" }}
-            />
-            <button onClick={handleAsk} style={{ marginLeft: "0.5rem" }}>
-                Ask
-            </button>
+            <div className="flex gap-2">
+                <input
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAsk()}
+                    placeholder="Ask about this repo..."
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                />
+                <button
+                    onClick={handleAsk}
+                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                >
+                    Ask
+                </button>
+            </div>
         </div>
     );
 }
