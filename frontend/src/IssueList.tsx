@@ -18,14 +18,22 @@ function IssueList() {
   const [selectedRepo, setSelectedRepo] = useState("");
   const [newRepo, setNewRepo] = useState("");
   const [importing, setImporting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchIssues = (repo?: string) => {
-    const url = repo
-      ? `http://localhost:4000/issues?repo=${encodeURIComponent(repo)}`
-      : "http://localhost:4000/issues";
-    fetch(url)
+  const fetchIssues = (repo?: string, pageNum: number = 1) => {
+    const params = new URLSearchParams();
+    if (repo) params.set("repo", repo);
+    params.set("page", String(pageNum));
+    params.set("limit", "5");
+
+    fetch(`http://localhost:4000/issues?${params.toString()}`)
       .then((res) => res.json())
-      .then((data) => setIssues(data));
+      .then((data) => {
+        setIssues(data.issues);
+        setTotalPages(data.totalPages);
+        setPage(data.page);
+      });
   };
 
   const fetchRepos = () => {
@@ -67,7 +75,7 @@ function IssueList() {
 
   const handleRepoChange = (repo: string) => {
     setSelectedRepo(repo);
-    fetchIssues(repo);
+    fetchIssues(repo, 1);
   };
 
   return (
@@ -155,6 +163,30 @@ function IssueList() {
       </li>
     ))}
   </ul>
+
+  {
+    totalPages > 1 && (
+      <div className="flex items-center justify-center gap-3 mt-4 text-sm">
+        <button
+          onClick={() => fetchIssues(selectedRepo, page - 1)}
+          disabled={page <= 1}
+          className="px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-gray-600">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          onClick={() => fetchIssues(selectedRepo, page + 1)}
+          disabled={page >= totalPages}
+          className="px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    )
+  }
     </div >
   );
 }
