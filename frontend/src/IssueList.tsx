@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { io } from "socket.io-client";
 
 interface Issue {
   id: number;
@@ -12,11 +13,25 @@ interface Issue {
 
 function IssueList() {
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [notification, setNotification] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:4000/issues")
       .then((res) => res.json())
       .then((data) => setIssues(data));
+
+    const socket = io("http://localhost:4000");
+    socket.on("new-issue", (issue) => {
+      setNotification(`New issue: #${issue.number} — ${issue.title}`);
+      fetch("http://localhost:4000/issues")
+        .then((res) => res.json())
+        .then((data) => setIssues(data));
+      setTimeout(() => setNotification(""), 5000);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   return (
@@ -28,6 +43,9 @@ function IssueList() {
       <br />
       <a href="http://localhost:4000/auth/github">Login with GitHub →</a>
       <h2>Issues</h2>
+      {notification && (
+        <p style={{ background: "#d4f7d4", padding: "0.5rem" }}>{notification}</p>
+      )}
       <ul>
         {issues.map((issue) => (
           <li key={issue.id}>

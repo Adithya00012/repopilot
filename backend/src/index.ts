@@ -336,6 +336,12 @@ app.get("/issues", async (req, res) => {
     res.json(issues);
 });
 
+app.post("/internal/notify-new-issue", async (req, res) => {
+    const { issue } = req.body;
+    io.emit("new-issue", issue);
+    res.status(200).send("OK");
+});
+
 app.post("/webhooks/github", async (req, res) => {
     const { action, issue, repository } = req.body;
 
@@ -454,6 +460,20 @@ app.get("/issues/:id/similar", async (req, res) => {
     res.json(results);
 });
 
-app.listen(PORT, () => {
+import { createServer } from "http";
+import { Server } from "socket.io";
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: { origin: "*" },
+});
+
+io.on("connection", (socket) => {
+    console.log("Client connected:", socket.id);
+});
+
+httpServer.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+export { io };

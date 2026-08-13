@@ -2,6 +2,7 @@ import "dotenv/config";
 import { Worker } from "bullmq";
 import { connection } from "./queue";
 import prisma from "./prisma";
+import axios from "axios";
 
 const worker = new Worker(
     "issue-processing",
@@ -35,6 +36,9 @@ const worker = new Worker(
         });
 
         console.log(`Processed issue #${issue.number}: ${issue.title}`);
+        await axios.post("http://localhost:4000/internal/notify-new-issue", {
+            issue: { id: issue.id, number: issue.number, title: issue.title },
+        });
     },
     { connection }
 );
