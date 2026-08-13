@@ -165,6 +165,35 @@ app.post("/repos/:owner/:repo/ingest-docs", async (req, res) => {
     res.json({ message: "Docs ingested", chunksSaved: saved });
 });
 
+app.post("/ingest-resolved-issues", async (req, res) => {
+    const resolvedIssues = await prisma.issue.findMany({
+        where: { state: "closed" },
+    });
+
+    let saved = 0;
+    for (const issue of resolvedIssues) {
+        const content = `Issue #${issue.number}: ${issue.title}\n\n${issue.body || ""}`;
+        const embedding = await generateEmbedding(content);
+
+        const doc = await prisma.document.create({
+            data: {
+                source: `${issue.repo}#${issue.number}`,
+                content,
+            },
+        });
+
+        await prisma.$executeRawUnsafe(
+            `UPDATE "Document" SET embedding = $1::vector WHERE id = $2`,
+            `[${embedding.join(",")}]`,
+            doc.id
+        );
+
+        saved++;
+    }
+
+    res.json({ message: "Resolved issues ingested", count: saved });
+});
+
 app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
