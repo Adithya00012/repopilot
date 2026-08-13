@@ -11,6 +11,7 @@ import { checkCompleteness } from "./ai";
 import { draftResponse } from "./ai";
 import groq from "./ai";
 import { generateReleaseSummary } from "./ai";
+import { logAction } from "./audit";
 
 const app = express();
 const PORT = 4000;
@@ -352,6 +353,13 @@ app.patch("/issues/:id", async (req, res) => {
         data: { label, approved },
     });
 
+    await logAction(
+        "update_issue",
+        "Issue",
+        id,
+        `label=${label}, approved=${approved}`
+    );
+
     res.json(issue);
 });
 
@@ -364,6 +372,8 @@ app.post("/issues/:id/categorize", async (req, res) => {
     }
 
     const suggestedCategory = await categorizeIssue(issue.title, issue.body || "");
+
+    await logAction("ai_suggest_category", "Issue", id, `suggested=${suggestedCategory}`);
 
     res.json({ suggestedCategory });
 });
