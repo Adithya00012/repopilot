@@ -67,9 +67,13 @@ function IssueDetail() {
   };
 
   const handleApprove = async () => {
+    const token = localStorage.getItem("token");
     const res = await fetch(`http://localhost:4000/issues/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ label, approved: true }),
     });
     const updated = await res.json();

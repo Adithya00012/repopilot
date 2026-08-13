@@ -82,7 +82,7 @@ app.get("/auth/github/callback", authLimiter, async (req, res) => {
         { expiresIn: "7d" }
     );
 
-    res.json({ token, user });
+    res.redirect(`http://localhost:5173/login-success?token=${token}`);
 });
 
 app.get("/me", (req, res) => {
