@@ -13,6 +13,7 @@ import groq from "./ai";
 import { generateReleaseSummary } from "./ai";
 import { logAction } from "./audit";
 import rateLimit from "express-rate-limit";
+import { requireAuth, AuthRequest } from "./middleware";
 
 const app = express();
 const PORT = 4000;
@@ -357,7 +358,7 @@ app.get("/issues/:id", async (req, res) => {
     res.json(issue);
 });
 
-app.patch("/issues/:id", async (req, res) => {
+app.patch("/issues/:id", requireAuth, async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
     const { label, approved } = req.body;
 
@@ -370,7 +371,8 @@ app.patch("/issues/:id", async (req, res) => {
         "update_issue",
         "Issue",
         id,
-        `label=${label}, approved=${approved}`
+        `label=${label}, approved=${approved}`,
+        req.user?.userId
     );
 
     res.json(issue);
