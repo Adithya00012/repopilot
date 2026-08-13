@@ -210,6 +210,32 @@ app.get("/reports/release-notes", async (req, res) => {
     res.json({ count: closedIssues.length, notes: summary });
 });
 
+app.get("/reports/frequent-problems", async (req, res) => {
+    const bugs = await prisma.issue.findMany({
+        where: { state: "open", label: "Bug" },
+    });
+
+    if (bugs.length === 0) {
+        return res.json({ count: 0, summary: "No open bugs found." });
+    }
+
+    const bugList = bugs.map((b) => `#${b.number}: ${b.title}`).join("\n");
+
+    const response = await groq.chat.completions.create({
+        model: "llama-3.1-8b-instant",
+        messages: [
+            {
+                role: "system",
+                content:
+                    "You are analyzing open bug reports for a repository. Identify common themes or recurring problems across these issues. Summarize in 2-4 short bullet points.",
+            },
+            { role: "user", content: bugList },
+        ],
+    });
+
+    res.json({ count: bugs.length, summary: response.choices[0].message.content });
+});
+
 app.post("/ask", async (req, res) => {
     const { question } = req.body;
 
