@@ -342,13 +342,29 @@ app.post("/ask", aiLimiter, async (req, res) => {
 });
 
 app.get("/issues", async (req, res) => {
-    const { repo } = req.query;
+    const { repo, page = "1", limit = "10" } = req.query;
 
-    const issues = await prisma.issue.findMany({
-        where: repo ? { repo: repo as string } : {},
-        orderBy: { createdAt: "desc" },
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+
+    const where = repo ? { repo: repo as string } : {};
+
+    const [issues, total] = await Promise.all([
+        prisma.issue.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            skip: (pageNum - 1) * limitNum,
+            take: limitNum,
+        }),
+        prisma.issue.count({ where }),
+    ]);
+
+    res.json({
+        issues,
+        total,
+        page: pageNum,
+        totalPages: Math.ceil(total / limitNum),
     });
-    res.json(issues);
 });
 
 app.get("/repos", async (req, res) => {
