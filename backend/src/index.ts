@@ -12,6 +12,7 @@ import { draftResponse } from "./ai";
 import groq from "./ai";
 import { generateReleaseSummary } from "./ai";
 import { logAction } from "./audit";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 const PORT = 4000;
@@ -23,16 +24,28 @@ app.use(express.json());
     return this.toString();
 };
 
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 requests per window
+    message: { error: "Too many login attempts. Please try again later." },
+});
+
+const aiLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 30, // 30 AI calls per window
+    message: { error: "Too many AI requests. Please slow down." },
+});
+
 app.get("/", (req, res) => {
     res.send("Hello API");
 });
 
-app.get("/auth/github", (req, res) => {
+app.get("/auth/github", authLimiter, (req, res) => {
     const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=repo,user`;
     res.redirect(redirectUrl);
 });
 
-app.get("/auth/github/callback", async (req, res) => {
+app.get("/auth/github/callback", authLimiter, async (req, res) => {
     const code = req.query.code as string;
 
     const tokenResponse = await axios.post(
@@ -274,7 +287,7 @@ app.get("/reports/contributors", async (req, res) => {
     res.json({ contributors });
 });
 
-app.post("/ask", async (req, res) => {
+app.post("/ask", aiLimiter, async (req, res) => {
     const { question } = req.body;
 
     if (!question) {
@@ -363,7 +376,7 @@ app.patch("/issues/:id", async (req, res) => {
     res.json(issue);
 });
 
-app.post("/issues/:id/categorize", async (req, res) => {
+app.post("/issues/:id/categorize", aiLimiter, async (req, res) => {
     const id = Number(req.params.id);
     const issue = await prisma.issue.findUnique({ where: { id } });
 
@@ -378,7 +391,7 @@ app.post("/issues/:id/categorize", async (req, res) => {
     res.json({ suggestedCategory });
 });
 
-app.post("/issues/:id/embed", async (req, res) => {
+app.post("/issues/:id/embed", aiLimiter, async (req, res) => {
     const id = Number(req.params.id);
     const issue = await prisma.issue.findUnique({ where: { id } });
 
@@ -398,7 +411,7 @@ app.post("/issues/:id/embed", async (req, res) => {
     res.json({ message: "Embedding saved", length: embedding.length });
 });
 
-app.post("/issues/:id/check-completeness", async (req, res) => {
+app.post("/issues/:id/check-completeness", aiLimiter, async (req, res) => {
     const id = Number(req.params.id);
     const issue = await prisma.issue.findUnique({ where: { id } });
 
@@ -410,7 +423,7 @@ app.post("/issues/:id/check-completeness", async (req, res) => {
     res.json(result);
 });
 
-app.post("/issues/:id/draft-response", async (req, res) => {
+app.post("/issues/:id/draft-response", aiLimiter, async (req, res) => {
     const id = Number(req.params.id);
     const issue = await prisma.issue.findUnique({ where: { id } });
 
