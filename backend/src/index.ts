@@ -83,7 +83,8 @@ app.get("/auth/github/callback", authLimiter, async (req, res) => {
         { expiresIn: "7d" }
     );
 
-    res.redirect(`http://localhost:5173/login-success?token=${token}`);
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    res.redirect(`${frontendUrl}/login-success?token=${token}`);
 });
 
 app.get("/me", (req, res) => {
