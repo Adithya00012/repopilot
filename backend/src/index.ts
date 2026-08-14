@@ -14,6 +14,7 @@ import { generateReleaseSummary } from "./ai";
 import { logAction } from "./audit";
 import rateLimit from "express-rate-limit";
 import { requireAuth, AuthRequest } from "./middleware";
+import "./worker";
 
 const app = express();
 const PORT = 4000;

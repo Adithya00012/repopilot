@@ -51,4 +51,4 @@ worker.on("failed", (job, err) => {
     console.log(`Job ${job?.id} failed:`, err.message);
 });
 
-console.log("Worker started, listening for jobs...");
+console.log("Background worker started, listening for jobs...");
