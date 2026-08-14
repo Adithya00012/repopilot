@@ -17,6 +17,7 @@ import { requireAuth, AuthRequest } from "./middleware";
 import "./worker";
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = 4000;
 
 app.use(cors());
@@ -110,7 +111,10 @@ app.get("/repos/:owner/:repo/import", async (req, res) => {
     const response = await axios.get(
         `https://api.github.com/repos/${owner}/${repo}/issues`,
         {
-            headers: { Accept: "application/vnd.github+json" },
+            headers: {
+                Accept: "application/vnd.github+json",
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            },
             params: { state: "all", per_page: 20 },
         }
     );
@@ -150,7 +154,12 @@ app.post("/repos/:owner/:repo/ingest-docs", async (req, res) => {
 
     const readmeResponse = await axios.get(
         `https://api.github.com/repos/${owner}/${repo}/readme`,
-        { headers: { Accept: "application/vnd.github.raw+json" } }
+        {
+            headers: {
+                Accept: "application/vnd.github.raw+json",
+                Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            },
+        }
     );
 
     const readmeText: string = readmeResponse.data;
