@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { API_URL } from "./config";
 
 interface SimilarIssue {
   id: number;
@@ -31,20 +32,20 @@ function IssueDetail() {
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost:4000/issues/${id}`)
+    fetch(`${API_URL}/issues/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setIssue(data);
         setLabel(data.label || "");
       });
 
-    fetch(`http://localhost:4000/issues/${id}/similar`)
+    fetch(`${API_URL}/issues/${id}/similar`)
       .then((res) => res.json())
       .then((data) => setSimilar(data));
   }, [id]);
 
   const handleSuggest = async () => {
-    const res = await fetch(`http://localhost:4000/issues/${id}/categorize`, {
+    const res = await fetch(`${API_URL}/issues/${id}/categorize`, {
       method: "POST",
     });
     const data = await res.json();
@@ -52,7 +53,7 @@ function IssueDetail() {
   };
 
   const handleCheckCompleteness = async () => {
-    const res = await fetch(`http://localhost:4000/issues/${id}/check-completeness`, {
+    const res = await fetch(`${API_URL}/issues/${id}/check-completeness`, {
       method: "POST",
     });
     const data = await res.json();
@@ -60,7 +61,7 @@ function IssueDetail() {
   };
 
   const handleDraftResponse = async () => {
-    const res = await fetch(`http://localhost:4000/issues/${id}/draft-response`, {
+    const res = await fetch(`${API_URL}/issues/${id}/draft-response`, {
       method: "POST",
     });
     const data = await res.json();
@@ -69,7 +70,7 @@ function IssueDetail() {
 
   const handleApprove = async () => {
     const token = localStorage.getItem("token");
-    const res = await fetch(`http://localhost:4000/issues/${id}`, {
+    const res = await fetch(`${API_URL}/issues/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

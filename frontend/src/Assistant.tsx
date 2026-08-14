@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";    
 import { Link } from "react-router-dom";
+import { API_URL } from "./config";
 
 interface Message {
     role: "user" | "assistant";
@@ -15,7 +16,7 @@ function Assistant() {
     const [selectedRepo, setSelectedRepo] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:4000/repos")
+        fetch('${API_URL}/repos')
             .then((res) => res.json())
             .then((data) => setRepos(data));
     }, []);
@@ -28,7 +29,7 @@ function Assistant() {
         setQuestion("");
         setLoading(true);
 
-        const res = await fetch("http://localhost:4000/ask", {
+        const res = await fetch('${API_URL}/ask', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ question: userMsg.text, repo: selectedRepo || undefined }),

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown"; 
+import { API_URL } from "./config";
 
 function Reports() {
     const [releaseNotes, setReleaseNotes] = useState("");
@@ -11,7 +12,7 @@ function Reports() {
 
     const fetchReleaseNotes = async () => {
         setLoading("release");
-        const res = await fetch("http://localhost:4000/reports/release-notes");
+        const res = await fetch(`${API_URL}/reports/release-notes`);
         const data = await res.json();
         setReleaseNotes(data.notes);
         setLoading("");
@@ -19,7 +20,7 @@ function Reports() {
 
     const fetchFrequentProblems = async () => {
         setLoading("frequent");
-        const res = await fetch("http://localhost:4000/reports/frequent-problems");
+        const res = await fetch(`${API_URL}/reports/frequent-problems`);
         const data = await res.json();
         setFrequentProblems(data.summary);
         setLoading("");
@@ -27,7 +28,7 @@ function Reports() {
 
     const fetchHighPriority = async () => {
         setLoading("priority");
-        const res = await fetch("http://localhost:4000/reports/high-priority");
+        const res = await fetch(`${API_URL}/reports/high-priority`);
         const data = await res.json();
         setHighPriority(data);
         setLoading("");
@@ -35,7 +36,7 @@ function Reports() {
 
     const fetchContributors = async () => {
         setLoading("contributors");
-        const res = await fetch("http://localhost:4000/reports/contributors");
+        const res = await fetch(`${API_URL}/reports/contributors`);
         const data = await res.json();
         setContributors(data.contributors);
         setLoading("");

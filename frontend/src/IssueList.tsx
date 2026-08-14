@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { io } from "socket.io-client";
+import { API_URL } from "./config";
 
 interface Issue {
   id: number;
@@ -27,7 +28,7 @@ function IssueList() {
     params.set("page", String(pageNum));
     params.set("limit", "5");
 
-    fetch(`http://localhost:4000/issues?${params.toString()}`)
+    fetch(`${API_URL}/issues?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         setIssues(data.issues);
@@ -37,7 +38,7 @@ function IssueList() {
   };
 
   const fetchRepos = () => {
-    fetch("http://localhost:4000/repos")
+    fetch(`${API_URL}/repos`)
       .then((res) => res.json())
       .then((data) => setRepos(data));
   };
@@ -46,7 +47,7 @@ function IssueList() {
     fetchIssues();
     fetchRepos();
 
-    const socket = io("http://localhost:4000");
+    const socket = io(API_URL);
     socket.on("new-issue", (issue) => {
       setNotification(`New issue: #${issue.number} — ${issue.title}`);
       fetchIssues();
@@ -66,8 +67,8 @@ function IssueList() {
     }
     setImporting(true);
     const [owner, repo] = newRepo.split("/");
-    await fetch(`http://localhost:4000/repos/${owner}/${repo}/import`);
-    await fetch(`http://localhost:4000/repos/${owner}/${repo}/ingest-docs`, { method: "POST" });
+    await fetch(`${API_URL}/repos/${owner}/${repo}/import`);
+    await fetch(`${API_URL}/repos/${owner}/${repo}/ingest-docs`, { method: "POST" });
     setNewRepo("");
     fetchRepos();
     fetchIssues(selectedRepo);
@@ -92,7 +93,7 @@ function IssueList() {
           </button>
         ) : (
           
-            <a href="http://localhost:4000/auth/github"
+            <a href={`${API_URL}/auth/github`}
             className="text-sm px-3 py-1.5 rounded-md bg-gray-900 hover:bg-gray-800 text-white"
           >
             Login with GitHub
