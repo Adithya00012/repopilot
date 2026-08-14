@@ -16,7 +16,7 @@ function Assistant() {
     const [selectedRepo, setSelectedRepo] = useState("");
 
     useEffect(() => {
-        fetch('${API_URL}/repos')
+        fetch(`${API_URL}/repos`)
             .then((res) => res.json())
             .then((data) => setRepos(data));
     }, []);
@@ -29,7 +29,7 @@ function Assistant() {
         setQuestion("");
         setLoading(true);
 
-        const res = await fetch('${API_URL}/ask', {
+        const res = await fetch(`${API_URL}/ask`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ question: userMsg.text, repo: selectedRepo || undefined }),
