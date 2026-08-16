@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown"; 
 import { API_URL } from "./config";
+import { useEffect } from "react";
 
 function Reports() {
     const [releaseNotes, setReleaseNotes] = useState("");
@@ -9,10 +10,21 @@ function Reports() {
     const [highPriority, setHighPriority] = useState<any>(null);
     const [contributors, setContributors] = useState<any[]>([]);
     const [loading, setLoading] = useState("");
+    const [repos, setRepos] = useState<string[]>([]);
+    const [selectedRepo, setSelectedRepo] = useState("");
+
+    useEffect(() => {
+        fetch(`${API_URL}/repos`)
+            .then((res) => res.json())
+            .then((data) => setRepos(data));
+    }, []);
 
     const fetchReleaseNotes = async () => {
         setLoading("release");
-        const res = await fetch(`${API_URL}/reports/release-notes`);
+        const url = selectedRepo
+            ? `${API_URL}/reports/release-notes?repo=${encodeURIComponent(selectedRepo)}`
+            : `${API_URL}/reports/release-notes`;
+        const res = await fetch(url);
         const data = await res.json();
         setReleaseNotes(data.notes);
         setLoading("");
@@ -20,7 +32,10 @@ function Reports() {
 
     const fetchFrequentProblems = async () => {
         setLoading("frequent");
-        const res = await fetch(`${API_URL}/reports/frequent-problems`);
+        const url = selectedRepo
+            ? `${API_URL}/reports/frequent-problems?repo=${encodeURIComponent(selectedRepo)}`
+            : `${API_URL}/reports/frequent-problems`;
+        const res = await fetch(url);
         const data = await res.json();
         setFrequentProblems(data.summary);
         setLoading("");
@@ -28,7 +43,10 @@ function Reports() {
 
     const fetchHighPriority = async () => {
         setLoading("priority");
-        const res = await fetch(`${API_URL}/reports/high-priority`);
+        const url = selectedRepo
+            ? `${API_URL}/reports/high-priority?repo=${encodeURIComponent(selectedRepo)}`
+            : `${API_URL}/reports/high-priority`;
+        const res = await fetch(url);
         const data = await res.json();
         setHighPriority(data);
         setLoading("");
@@ -36,7 +54,10 @@ function Reports() {
 
     const fetchContributors = async () => {
         setLoading("contributors");
-        const res = await fetch(`${API_URL}/reports/contributors`);
+        const url = selectedRepo
+            ? `${API_URL}/reports/contributors?repo=${encodeURIComponent(selectedRepo)}`
+            : `${API_URL}/reports/contributors`;
+        const res = await fetch(url);
         const data = await res.json();
         setContributors(data.contributors);
         setLoading("");
@@ -46,6 +67,21 @@ function Reports() {
         <div className="max-w-3xl mx-auto p-6">
             <Link to="/" className="text-blue-600 hover:underline text-sm">← Back to issues</Link>
             <h1 className="text-2xl font-bold text-gray-900 mt-3 mb-6">Weekly Reports</h1>
+            <div className="mb-6">
+                <label className="text-sm text-gray-700">
+                    Repo:{" "}
+                    <select
+                        value={selectedRepo}
+                        onChange={(e) => setSelectedRepo(e.target.value)}
+                        className="ml-1 border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                        <option value="">All repos</option>
+                        {repos.map((r) => (
+                            <option key={r} value={r}>{r}</option>
+                        ))}
+                    </select>
+                </label>
+            </div>
 
             <section className="mb-6 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
