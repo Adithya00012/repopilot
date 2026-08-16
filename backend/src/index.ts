@@ -222,8 +222,9 @@ app.post("/ingest-resolved-issues", async (req, res) => {
 });
 
 app.get("/reports/release-notes", async (req, res) => {
+    const { repo } = req.query;
     const closedIssues = await prisma.issue.findMany({
-        where: { state: "closed" },
+        where: { state: "closed", ...(repo ? { repo: repo as string } : {}) },
         orderBy: { updatedAt: "desc" },
     });
 
@@ -237,8 +238,9 @@ app.get("/reports/release-notes", async (req, res) => {
 });
 
 app.get("/reports/frequent-problems", async (req, res) => {
+    const { repo } = req.query;
     const bugs = await prisma.issue.findMany({
-        where: { state: "open", label: "Bug" },
+        where: { state: "open", label: "Bug", ...(repo ? { repo: repo as string } : {}) },
     });
 
     if (bugs.length === 0) {
@@ -263,8 +265,9 @@ app.get("/reports/frequent-problems", async (req, res) => {
 });
 
 app.get("/reports/high-priority", async (req, res) => {
+    const { repo } = req.query;
     const openIssues = await prisma.issue.findMany({
-        where: { state: "open" },
+        where: { state: "open", ...(repo ? { repo: repo as string } : {}) },
         orderBy: { createdAt: "asc" },
     });
 
@@ -285,7 +288,10 @@ app.get("/reports/high-priority", async (req, res) => {
 });
 
 app.get("/reports/contributors", async (req, res) => {
-    const issues = await prisma.issue.findMany();
+    const { repo } = req.query;
+    const issues = await prisma.issue.findMany({
+        where: repo ? { repo: repo as string } : {},
+    });
 
     const counts: Record<string, number> = {};
     for (const issue of issues) {
